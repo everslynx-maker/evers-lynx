@@ -1,0 +1,1445 @@
+<!DOCTYPE html>
+<html lang="nl" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pulse Analytics | Local Business Intelligence & Financial Dashboards</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js for interactive dashboard graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        pulse: {
+                            blue: '#2563EB',
+                            cyan: '#06B6D4',
+                            emerald: '#10B981',
+                            dark: '#0B0F19',
+                            card: '#111827',
+                            border: '#1F2937'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #07090E;
+            color: #F3F4F6;
+        }
+        .glass-card {
+            background: rgba(17, 24, 39, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glass-card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .glass-card-hover:hover {
+            transform: translateY(-3px);
+            border-color: rgba(37, 99, 235, 0.4);
+            box-shadow: 0 12px 30px -10px rgba(37, 99, 235, 0.2);
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #60A5FA 0%, #3B82F6 50%, #34D399 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .gradient-border {
+            position: relative;
+            border-radius: 1rem;
+        }
+        .gradient-border::before {
+            content: "";
+            position: absolute;
+            inset: -1px;
+            border-radius: 1.05rem;
+            padding: 1px;
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.5), rgba(16, 185, 129, 0.3));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0B0F19;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1F2937;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #374151;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-blue-600 selection:text-white">
+
+    <!-- Navigation Header -->
+    <header class="sticky top-0 z-50 glass-card border-b border-slate-800/80 bg-slate-950/80">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <!-- Brand Logo -->
+            <a href="#" class="flex items-center gap-3 group">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 via-cyan-500 to-emerald-400 p-0.5 shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-transform">
+                    <div class="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
+                        <i class="fa-solid fa-chart-line text-blue-400 text-lg"></i>
+                    </div>
+                </div>
+                <div>
+                    <span class="text-xl font-bold tracking-tight text-white flex items-center gap-1.5">
+                        PULSE <span class="gradient-text font-extrabold">ANALYTICS</span>
+                    </span>
+                    <span class="text-[10px] uppercase tracking-widest text-slate-400 block -mt-1 font-semibold">Local Intelligence BE</span>
+                </div>
+            </a>
+
+            <!-- Desktop Nav Links -->
+            <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300">
+                <a href="#demo" class="hover:text-blue-400 transition-colors" data-i18n="nav_report">Maandrekening</a>
+                <a href="#calendar" class="hover:text-blue-400 transition-colors" data-i18n="nav_events">Stadskalender</a>
+                <a href="#usp" class="hover:text-blue-400 transition-colors" data-i18n="nav_usp">Boekhouder Besparing</a>
+                <a href="#pricing" class="hover:text-blue-400 transition-colors" data-i18n="nav_pricing">Tarieven</a>
+                <a href="#support" class="hover:text-blue-400 transition-colors" data-i18n="nav_portal">Klantenportaal</a>
+            </nav>
+
+            <!-- Language Switcher & Action Button -->
+            <div class="flex items-center gap-3">
+                <!-- Language Selector Pill -->
+                <div class="relative bg-slate-900 border border-slate-800 rounded-lg p-1 flex items-center text-xs">
+                    <button onclick="setLanguage('nl')" id="lang-nl" class="px-2 py-1 rounded-md font-semibold transition-all bg-blue-600 text-white shadow">NL</button>
+                    <button onclick="setLanguage('fr')" id="lang-fr" class="px-2 py-1 rounded-md font-semibold transition-all text-slate-400 hover:text-white">FR</button>
+                    <button onclick="setLanguage('de')" id="lang-de" class="px-2 py-1 rounded-md font-semibold transition-all text-slate-400 hover:text-white">DE</button>
+                    <button onclick="setLanguage('en')" id="lang-en" class="px-2 py-1 rounded-md font-semibold transition-all text-slate-400 hover:text-white">EN</button>
+                </div>
+
+                <a href="#support" class="hidden sm:inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-medium text-sm px-4 py-2.5 rounded-lg shadow-lg shadow-blue-600/25 transition-all">
+                    <i class="fa-solid fa-headset text-xs"></i>
+                    <span data-i18n="btn_onsite">Support op Locatie</span>
+                </a>
+
+                <!-- Mobile Menu Button -->
+                <button onclick="toggleMobileMenu()" class="md:hidden p-2 text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-bars text-xl" id="menu-icon"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Drawer Menu -->
+        <div id="mobile-menu" class="hidden md:hidden border-b border-slate-800 bg-slate-950/95 px-4 pt-2 pb-6 space-y-3">
+            <a href="#demo" onclick="toggleMobileMenu()" class="block py-2 text-slate-300 hover:text-blue-400 font-medium" data-i18n="nav_report">Maandrekening</a>
+            <a href="#calendar" onclick="toggleMobileMenu()" class="block py-2 text-slate-300 hover:text-blue-400 font-medium" data-i18n="nav_events">Stadskalender</a>
+            <a href="#usp" onclick="toggleMobileMenu()" class="block py-2 text-slate-300 hover:text-blue-400 font-medium" data-i18n="nav_usp">Boekhouder Besparing</a>
+            <a href="#pricing" onclick="toggleMobileMenu()" class="block py-2 text-slate-300 hover:text-blue-400 font-medium" data-i18n="nav_pricing">Tarieven</a>
+            <a href="#support" onclick="toggleMobileMenu()" class="block py-2 text-slate-300 hover:text-blue-400 font-medium" data-i18n="nav_portal">Klantenportaal</a>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="relative pt-16 pb-24 overflow-hidden">
+        <!-- Background Ambient Glows -->
+        <div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-blue-600/15 blur-[120px] rounded-full pointer-events-none"></div>
+        <div class="absolute top-1/3 right-10 w-[300px] h-[300px] bg-emerald-500/10 blur-[100px] rounded-full pointer-events-none"></div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+            <!-- Badge -->
+            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-950/80 border border-blue-800/60 text-blue-300 text-xs font-semibold mb-8 shadow-inner">
+                <span class="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span data-i18n="hero_badge">Speciaal voor KMO's & Horeca in Leuven & Luik</span>
+            </div>
+
+            <!-- Main Headline -->
+            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white max-w-4xl mx-auto leading-[1.15]">
+                <span data-i18n="hero_title_1">Financieel Overzicht &</span> 
+                <span class="gradient-text block mt-1" data-i18n="hero_title_2">Stads-Intelligence voor KMO's</span>
+            </h1>
+
+            <!-- Subtitle -->
+            <p class="mt-6 text-lg sm:text-xl text-slate-300 max-w-3xl mx-auto leading-relaxed font-normal" data-i18n="hero_subtitle">
+                Geen moeilijke Excel-sheets of dure consultants. Wij leveren een overzichtelijke maandrekening én koppelen jouw zaak aan de stadsagenda van Leuven en Luik. Bespaar direct uren op je boekhouder.
+            </p>
+
+            <!-- CTA Buttons -->
+            <div class="mt-10 flex flex-wrap items-center justify-center gap-4">
+                <a href="#demo" class="px-7 py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold shadow-xl shadow-blue-600/20 hover:scale-105 transition-all flex items-center gap-2">
+                    <i class="fa-solid fa-desktop"></i>
+                    <span data-i18n="btn_view_report">Bekijk Voorbeeld Rapport</span>
+                </a>
+                <a href="#pricing" class="px-7 py-3.5 rounded-xl glass-card hover:bg-slate-800/80 text-slate-200 hover:text-white font-semibold transition-all border border-slate-700/80 flex items-center gap-2">
+                    <i class="fa-solid fa-tags"></i>
+                    <span data-i18n="btn_pricing">Bekijk Betaalbare Tarieven</span>
+                </a>
+            </div>
+
+            <!-- Trust Pills -->
+            <div class="mt-12 flex flex-wrap justify-center items-center gap-6 text-xs text-slate-400 font-medium">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-circle-check text-emerald-400"></i>
+                    <span data-i18n="trust_1">Geen installatie nodig</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-circle-check text-emerald-400"></i>
+                    <span data-i18n="trust_2">Kant-en-klaar voor je boekhouder</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-circle-check text-emerald-400"></i>
+                    <span data-i18n="trust_3">Persoonlijke service op de zaak</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Interactive Report Preview Section -->
+    <section id="demo" class="py-16 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-bold text-white tracking-tight" data-i18n="demo_heading">De Pulse "Maandrekening" (Demo Dashboard)</h2>
+                <p class="text-slate-400 mt-2 text-sm max-w-2xl mx-auto" data-i18n="demo_subheading">
+                    Zo ziet jouw maandelijks verslag eruit. Geen saaie Excel-tabellen, maar een helder, interactief dashboard dat je ook direct per mail kan versturen.
+                </p>
+            </div>
+
+            <!-- Interactive Demo Container -->
+            <div class="glass-card gradient-border p-6 sm:p-8 rounded-2xl shadow-2xl bg-slate-900/90">
+                
+                <!-- Dashboard Top Bar: Month Selector & Export Buttons -->
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                    <div>
+                        <div class="flex items-center gap-3">
+                            <h3 class="text-xl font-bold text-white" id="client-name-heading">Brasserie De Ladeuze (Leuven)</h3>
+                            <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-950 text-emerald-400 border border-emerald-800/80" data-i18n="status_active">Actief Klant-ID #4820</span>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-1" data-i18n="demo_period_label">Selecteer een rapportageperiode om het verslag te herberekenen:</p>
+                    </div>
+
+                    <!-- Month Switcher Pills -->
+                    <div class="flex items-center gap-2 bg-slate-950 p-1.5 rounded-xl border border-slate-800">
+                        <button onclick="changeMonth('april')" id="btn-april" class="month-btn px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-blue-600 text-white shadow">
+                            <i class="fa-solid fa-calendar-day mr-1"></i> April 2026
+                        </button>
+                        <button onclick="changeMonth('mei')" id="btn-mei" class="month-btn px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white transition-all">
+                            <i class="fa-solid fa-calendar-day mr-1"></i> Mei 2026
+                        </button>
+                        <button onclick="changeMonth('juni')" id="btn-juni" class="month-btn px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white transition-all">
+                            <i class="fa-solid fa-calendar-day mr-1"></i> Juni 2026
+                        </button>
+                    </div>
+                </div>
+
+                <!-- KPI Cards Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 my-8">
+                    <!-- Omzet -->
+                    <div class="p-4 rounded-xl bg-slate-950/80 border border-slate-800/80">
+                        <div class="flex items-center justify-between text-slate-400 text-xs font-medium">
+                            <span data-i18n="kpi_revenue">Totale Omzet</span>
+                            <div class="w-7 h-7 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-400">
+                                <i class="fa-solid fa-arrow-trend-up"></i>
+                            </div>
+                        </div>
+                        <div class="mt-2 text-2xl font-extrabold text-white" id="kpi-omzet">€ 4.750,00</div>
+                        <div class="mt-1 text-[11px] text-emerald-400 font-medium flex items-center gap-1">
+                            <i class="fa-solid fa-circle-arrow-up"></i> <span id="kpi-omzet-trend">+14% t.o.v. vorige maand</span>
+                        </div>
+                    </div>
+
+                    <!-- Netto Winst -->
+                    <div class="p-4 rounded-xl bg-slate-950/80 border border-slate-800/80">
+                        <div class="flex items-center justify-between text-slate-400 text-xs font-medium">
+                            <span data-i18n="kpi_profit">Netto Winst</span>
+                            <div class="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
+                                <i class="fa-solid fa-wallet"></i>
+                            </div>
+                        </div>
+                        <div class="mt-2 text-2xl font-extrabold text-emerald-400" id="kpi-winst">€ 3.650,00</div>
+                        <div class="mt-1 text-[11px] text-slate-400 font-medium" data-i18n="kpi_margin_label">Marge: <span id="kpi-marge" class="text-white font-semibold">76,8%</span></div>
+                    </div>
+
+                    <!-- Openstaande Debiteuren -->
+                    <div class="p-4 rounded-xl bg-slate-950/80 border border-slate-800/80">
+                        <div class="flex items-center justify-between text-slate-400 text-xs font-medium">
+                            <span data-i18n="kpi_receivables">Nog Te Ontvangen (Debiteuren)</span>
+                            <div class="w-7 h-7 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-400">
+                                <i class="fa-solid fa-clock"></i>
+                            </div>
+                        </div>
+                        <div class="mt-2 text-2xl font-extrabold text-amber-400" id="kpi-debiteuren">€ 3.550,00</div>
+                        <div class="mt-1 text-[11px] text-amber-300/80 font-medium" data-i18n="kpi_action_needed">⚠️ 2 facturen herinneren</div>
+                    </div>
+
+                    <!-- Openstaande Schulden/Crediteuren -->
+                    <div class="p-4 rounded-xl bg-slate-950/80 border border-slate-800/80">
+                        <div class="flex items-center justify-between text-slate-400 text-xs font-medium">
+                            <span data-i18n="kpi_payables">Nog Te Betalen (Crediteuren)</span>
+                            <div class="w-7 h-7 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-400">
+                                <i class="fa-solid fa-file-invoice-dollar"></i>
+                            </div>
+                        </div>
+                        <div class="mt-2 text-2xl font-extrabold text-slate-200" id="kpi-crediteuren">€ 450,00</div>
+                        <div class="mt-1 text-[11px] text-slate-400 font-medium" data-i18n="kpi_due_ok">Vervaldatum in orde</div>
+                    </div>
+                </div>
+
+                <!-- Chart & City Alert Banner Grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Chart.js Container (2 cols) -->
+                    <div class="lg:col-span-2 bg-slate-950/90 p-5 rounded-xl border border-slate-800">
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="text-sm font-bold text-white flex items-center gap-2">
+                                <i class="fa-solid fa-chart-column text-blue-400"></i>
+                                <span data-i18n="chart_title">Omzet vs. Kosten Analyse</span>
+                            </h4>
+                            <span class="text-xs text-slate-400" id="chart-month-label">Periode: April 2026</span>
+                        </div>
+                        <div class="h-64 w-full">
+                            <canvas id="financialChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- City Event Intelligence Card (1 col) -->
+                    <div class="bg-gradient-to-br from-blue-950/60 to-slate-950 p-5 rounded-xl border border-blue-900/50 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="px-2.5 py-1 rounded-md text-[11px] font-bold bg-blue-600 text-white flex items-center gap-1.5 shadow">
+                                    <i class="fa-solid fa-location-dot"></i> <span id="event-city-badge">Leuven (3000)</span>
+                                </span>
+                                <span class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold" data-i18n="event_impact_label">Impact Alert</span>
+                            </div>
+
+                            <h4 class="text-base font-bold text-white mt-2" id="event-title">🔴 OHL Thuiswedstrijd & Examen-Kickoff</h4>
+                            <p class="text-xs text-slate-300 mt-2 leading-relaxed" id="event-desc">
+                                Hoge verwachte drukte rond Ladeuzeplein & Oude Markt. Historisch geziene omzetstijging van +35% op avondverkopen.
+                            </p>
+
+                            <div class="mt-4 p-3 rounded-lg bg-blue-900/30 border border-blue-800/40 text-xs text-blue-200">
+                                <strong class="block text-blue-400 mb-1" data-i18n="event_advice_title">💡 Actie-Advies van Pulse:</strong>
+                                <span id="event-advice">Verhoog bier & snack inkoop met 25%. Plan 2 extra kelners in voor de avondshift.</span>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 pt-4 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
+                            <span data-i18n="event_source">Bron: Visit Leuven API</span>
+                            <a href="#calendar" class="text-blue-400 hover:underline font-medium" data-i18n="btn_full_calendar">Volledige Kalender →</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Report Action Buttons -->
+                <div class="mt-8 pt-6 border-t border-slate-800 flex flex-wrap items-center justify-between gap-4">
+                    <div class="text-xs text-slate-400 flex items-center gap-2">
+                        <i class="fa-solid fa-file-shield text-emerald-400 text-sm"></i>
+                        <span data-i18n="report_accountant_ready">Geformatteerd en klaar voor jouw boekhouder (PDF / CSV)</span>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <button onclick="openEmailModal()" class="px-4 py-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold transition-all border border-slate-700 flex items-center gap-2">
+                            <i class="fa-solid fa-paper-plane text-blue-400"></i>
+                            <span data-i18n="btn_send_email">Verstuur Naar Mijn E-mail</span>
+                        </button>
+                        <button onclick="triggerPdfDownload()" class="px-4 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold transition-all shadow-lg shadow-blue-600/20 flex items-center gap-2">
+                            <i class="fa-solid fa-download"></i>
+                            <span data-i18n="btn_download_pdf">Download Rapport (PDF)</span>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Interactive City Event Calendar Section -->
+    <section id="calendar" class="py-16 bg-slate-950/60 border-y border-slate-800/80 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
+                <div>
+                    <div class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-400 mb-2">
+                        <i class="fa-solid fa-city"></i> <span data-i18n="calendar_tag">Demand Forecasting System</span>
+                    </div>
+                    <h2 class="text-3xl font-bold text-white tracking-tight" data-i18n="calendar_heading">Stads-Intelligence Kalender</h2>
+                    <p class="text-slate-400 text-sm mt-1 max-w-xl" data-i18n="calendar_subheading">
+                        Wij synchroniseren de stadsagenda's van Leuven (3000) en Luik (4000) automatisch via open data. Zo sta je nooit meer onvoorbereid voor een vol of leeg terras.
+                    </p>
+                </div>
+
+                <!-- City Selector Toggle -->
+                <div class="flex items-center bg-slate-900 border border-slate-800 p-1.5 rounded-xl self-start md:self-auto">
+                    <button onclick="switchCity('leuven')" id="city-btn-leuven" class="px-4 py-2 rounded-lg text-xs font-bold transition-all bg-blue-600 text-white shadow">
+                        <i class="fa-solid fa-beer-mug-empty mr-1"></i> Leuven (3000)
+                    </button>
+                    <button onclick="switchCity('liege')" id="city-btn-liege" class="px-4 py-2 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-white">
+                        <i class="fa-solid fa-building-columns mr-1"></i> Luik / Liège (4000)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Event Cards Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="event-cards-container">
+                <!-- Dynamically populated via JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <!-- USP / Boekhouder Besparing Section -->
+    <section id="usp" class="py-20 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <h2 class="text-3xl font-extrabold text-white tracking-tight" data-i18n="usp_title">
+                    Waarom KMO's kiezen voor Pulse Analytics
+                </h2>
+                <p class="text-slate-400 text-base mt-3" data-i18n="usp_subtitle">
+                    Drie simpele pijlers die jouw zaak direct geld en tijd besparen.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Card 1 -->
+                <div class="glass-card p-8 rounded-2xl glass-card-hover border border-slate-800">
+                    <div class="w-12 h-12 rounded-xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-400 text-xl mb-6">
+                        <i class="fa-solid fa-piggy-bank"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3" data-i18n="usp_1_title">Bespaar op Boekhoudkosten</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed" data-i18n="usp_1_desc">
+                        Boekhouders rekenen €75 tot €120 per uur om losse bonnetjes en Excel-lijstjes te ordenen. Wij leveren een kant-en-klaar geordend dossier aan, waardoor je accountant sneller klaar is.
+                    </p>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="glass-card p-8 rounded-2xl glass-card-hover border border-slate-800">
+                    <div class="w-12 h-12 rounded-xl bg-emerald-600/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 text-xl mb-6">
+                        <i class="fa-solid fa-chart-pie"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3" data-i18n="usp_2_title">Grip op je Cashflow</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed" data-i18n="usp_2_desc">
+                        Voorkom verrassingen bij de BTW-aangifte of huurbetaling. Zie in één oogopslag welke klanten jou nog moeten betalen en welke rekeningen nog openstaan.
+                    </p>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="glass-card p-8 rounded-2xl glass-card-hover border border-slate-800">
+                    <div class="w-12 h-12 rounded-xl bg-cyan-600/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 text-xl mb-6">
+                        <i class="fa-solid fa-calendar-star"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3" data-i18n="usp_3_title">Stads-Intelligence</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed" data-i18n="usp_3_desc">
+                        Blijf op de hoogte van alle evenementen, cantussen, kermissen en matchen in Leuven en Luik. Stem je inkoop en personeel tijdig af op verwachte bezoekersstromen.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="py-20 bg-slate-950/80 border-t border-slate-800/80 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-950 text-emerald-400 text-xs font-bold mb-3 border border-emerald-800/60">
+                    <i class="fa-solid fa-shield-halved"></i> <span data-i18n="pricing_badge">Eerlijke & Betaalbare Tarieven</span>
+                </div>
+                <h2 class="text-3xl font-extrabold text-white tracking-tight" data-i18n="pricing_title">Kies het pakket dat bij jouw zaak past</h2>
+                <p class="text-slate-400 text-sm mt-2" data-i18n="pricing_subtitle">Geen dure advieskosten. Opzegbaar wanneer je wilt.</p>
+            </div>
+
+            <!-- Pricing Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
+                <!-- Starter Plan -->
+                <div class="glass-card p-8 rounded-2xl border border-slate-800 flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-lg font-bold text-white" data-i18n="plan_starter_title">Starter (Jaar)</h3>
+                        <p class="text-slate-400 text-xs mt-1" data-i18n="plan_starter_desc">Voor kleine zzp'ers & hobby-ondernemers</p>
+                        
+                        <div class="my-6">
+                            <span class="text-4xl font-extrabold text-white">€ 149</span>
+                            <span class="text-slate-400 text-xs" data-i18n="per_year">/ eenmalig per jaar</span>
+                        </div>
+
+                        <ul class="space-y-3 text-xs text-slate-300">
+                            <li class="flex items-center gap-2.5">
+                                <i class="fa-solid fa-check text-emerald-400"></i>
+                                <span data-i18n="plan_starter_f1">1x Per jaar compleet visueel jaarverslag</span>
+                            </li>
+                            <li class="flex items-center gap-2.5">
+                                <i class="fa-solid fa-check text-emerald-400"></i>
+                                <span data-i18n="plan_starter_f2">Inclusief Boekhouder-Export (CSV/PDF)</span>
+                            </li>
+                            <li class="flex items-center gap-2.5">
+                                <i class="fa-solid fa-check text-emerald-400"></i>
+                                <span data-i18n="plan_starter_f3">Jaarlijkse evenementenkalender Leuven/Luik</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <button onclick="selectPlan('Starter')" class="mt-8 w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs transition-all border border-slate-700" data-i18n="btn_choose_plan">
+                        Kies Starter
+                    </button>
+                </div>
+
+                <!-- Kwartaal Plan (Popular) -->
+                <div class="glass-card gradient-border p-8 rounded-2xl bg-slate-900/95 flex flex-col justify-between relative shadow-2xl">
+                    <div class="absolute -top-3.5 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-blue-600 text-white text-[10px] font-bold tracking-wider uppercase shadow-lg">
+                        ⭐ Meest Gekozen
+                    </div>
+
+                    <div>
+                        <h3 class="text-lg font-bold text-white" data-i18n="plan_kwartaal_title">Kwartaal (BTW-Synchroon)</h3>
+                        <p class="text-slate-400 text-xs mt-1" data-i18n="plan_kwartaal_desc">Ideaal voor winkels & kleine horeca</p>
+                        
+                        <div class="my-6">
+                            <span class="text-4xl font-extrabold text-white">€ 39</span>
+                            <span class="text-slate-400 text-xs" data-i18n="per_month">/ per maand (per kwartaal gefactureerd)</span>
+                        </div>
+
+                        <ul class="space-y-3 text-xs text-slate-300">
+                            <li class="flex items-center gap-2.5">
+                                <i class="fa-solid fa-check text-emerald-400"></i>
+                                <span data-i18n="plan_kwartaal_f1">Elk kwartaal een bijgewerkt dashboard</span>
+                            </li>
+                            <li class="flex items-center gap-2.5">
+                                <i class="fa-solid fa-check text-emerald-400"></i>
+                                <span data-i18n="plan_kwartaal_f2">Gesynchroniseerd met de BTW-aangifte</span>
+                            </li>
+                            <li class="flex items-center gap-2.5">
+                                <i class="fa-solid fa-check text-emerald-400"></i>
+                                <span data-i18n="plan_kwartaal_f3">Maandelijkse stads-event alerts per mail</span>
+                            </li>
+                            <li class="flex items-center gap-2.5">
+                                <i class="fa-solid fa-check text-emerald-400"></i>
+                                <span data-i18n="plan_kwartaal_f4">Ouderdomsanalyse van openstaande rekeningen</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <button onclick="selectPlan('Kwartaal')" class="mt-8 w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs transition-all shadow-lg shadow-blue-600/30" data-i18n="btn_choose_plan">
+                        Kies Kwartaal
+                    </button>
+                </div>
+
+                <!-- Premium Maand Plan -->
+                <div class="glass-card p-8 rounded-2xl border border-slate-800 flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-lg font-bold text-white" data-i18n="plan_maand_title">Maand Premium + Locatie Support</h3>
+                        <p class="text-slate-400 text-xs mt-1" data-i18n="plan_maand_desc">Voor drukke horeca & zaken op top-locaties</p>
+                        
+                        <div class="my-6">
+                            <span class="text-4xl font-extrabold text-white">€ 69</span>
+                            <span class="text-slate-400 text-xs" data-i18n="per_month_flat">/ per maand</span>
+                        </div>
+
+                        <ul class="space-y-3 text-xs text-slate-300">
+                            <li class="flex items-center gap-2.5">
+                                <i class="fa-solid fa-check text-emerald-400"></i>
+                                <span data-i18n="plan_maand_f1">Elke maand haarscherp financieel rapport</span>
+                            </li>
+                            <li class="flex items-center gap-2.5">
+                                <i class="fa-solid fa-check text-emerald-400"></i>
+                                <span data-i18n="plan_maand_f2">Persoonlijk bezoek op locatie (Leuven/Luik)</span>
+                            </li>
+                            <li class="flex items-center gap-2.5">
+                                <i class="fa-solid fa-check text-emerald-400"></i>
+                                <span data-i18n="plan_maand_f3">Actieve cashflow- & debiteurenbewaking</span>
+                            </li>
+                            <li class="flex items-center gap-2.5">
+                                <i class="fa-solid fa-check text-emerald-400"></i>
+                                <span data-i18n="plan_maand_f4">Directe WhatsApp / Telefoon ondersteuning</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <button onclick="selectPlan('Premium')" class="mt-8 w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs transition-all border border-slate-700" data-i18n="btn_choose_plan">
+                        Kies Premium
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Customer Portal & Support Request Section -->
+    <section id="support" class="py-20 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+                
+                <!-- Left Column: Support Ticket & On-Site Visit Request -->
+                <div class="glass-card p-8 rounded-2xl border border-slate-800">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-10 h-10 rounded-xl bg-blue-600/20 text-blue-400 flex items-center justify-center text-lg">
+                            <i class="fa-solid fa-street-view"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-white" data-i18n="portal_onsite_title">Vraag een Bezoek op Locatie Aan</h3>
+                            <p class="text-xs text-slate-400" data-i18n="portal_onsite_subtitle">In Leuven, Luik of omliggende gemeenten</p>
+                        </div>
+                    </div>
+
+                    <form id="support-form" onsubmit="handleSupportSubmit(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-1" data-i18n="form_name">Naam van de Zaak / Eigenaar</label>
+                            <input type="text" required placeholder="bijv. Brasserie De Ladeuze" class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors">
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-300 mb-1" data-i18n="form_city">Stad / Regio</label>
+                                <select required class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors">
+                                    <option value="Leuven">Leuven (3000)</option>
+                                    <option value="Liège">Luik / Liège (4000)</option>
+                                    <option value="Andere">Andere Belgische Stad</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-300 mb-1" data-i18n="form_email">E-mailadres</label>
+                                <input type="email" required placeholder="info@dezaak.be" class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-1" data-i18n="form_request_type">Type Ondersteuning</label>
+                            <select class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors">
+                                <option data-i18n="opt_audit">Gratis Eerste Financiele Audit</option>
+                                <option data-i18n="opt_onsite">Afspraak op de zaak (Leuven/Luik)</option>
+                                <option data-i18n="opt_excel">Hulp met Excel-export / Boekhouder</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-1" data-i18n="form_message">Bericht / Toelichting</label>
+                            <textarea rows="3" placeholder="Waar kunnen we jou en je zaak mee helpen?" class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors"></textarea>
+                        </div>
+
+                        <button type="submit" class="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold text-xs shadow-lg shadow-blue-600/20 transition-all" data-i18n="btn_submit_request">
+                            Verstuur Aanvraag
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Right Column: Interactive Evaluation & Feedback Module -->
+                <div class="glass-card p-8 rounded-2xl border border-slate-800 flex flex-col justify-between h-full">
+                    <div>
+                        <div class="flex items-center gap-3 mb-6">
+                            <div class="w-10 h-10 rounded-xl bg-emerald-600/20 text-emerald-400 flex items-center justify-center text-lg">
+                                <i class="fa-solid fa-star"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-white" data-i18n="eval_title">Evalueer Onze Dienstverlening</h3>
+                                <p class="text-xs text-slate-400" data-i18n="eval_subtitle">Voor bestaande en nieuwe klanten</p>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-950 p-6 rounded-xl border border-slate-800 mb-6 text-center">
+                            <span class="text-xs text-slate-400 block mb-2" data-i18n="eval_rating_label">Hoe tevreden ben je over jouw maandelijkse rapport?</span>
+                            
+                            <!-- Star Rating Component -->
+                            <div class="flex justify-center items-center gap-2 text-2xl text-slate-600 cursor-pointer" id="star-rating">
+                                <i class="fa-solid fa-star hover:text-amber-400 transition-colors" onclick="setRating(1)"></i>
+                                <i class="fa-solid fa-star hover:text-amber-400 transition-colors" onclick="setRating(2)"></i>
+                                <i class="fa-solid fa-star hover:text-amber-400 transition-colors" onclick="setRating(3)"></i>
+                                <i class="fa-solid fa-star hover:text-amber-400 transition-colors" onclick="setRating(4)"></i>
+                                <i class="fa-solid fa-star hover:text-amber-400 transition-colors" onclick="setRating(5)"></i>
+                            </div>
+                            <span class="text-[11px] text-amber-400 font-semibold mt-2 block" id="rating-text">Klik om een score te geven</span>
+                        </div>
+
+                        <div class="space-y-3">
+                            <textarea id="feedback-text" rows="3" placeholder="Laat je mening of suggestie achter voor ons team..." class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors"></textarea>
+                            <button onclick="submitFeedback()" class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs border border-slate-700 transition-all" data-i18n="btn_send_feedback">
+                                Verstuur Feedback
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 pt-6 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
+                        <span data-i18n="direct_contact">Direct contact via WhatsApp:</span>
+                        <a href="https://wa.me/32400000000" target="_blank" class="text-emerald-400 hover:underline font-semibold flex items-center gap-1">
+                            <i class="fa-brands fa-whatsapp text-sm"></i> +32 (0)4 12 34 56 78
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-slate-950 border-t border-slate-800/80 py-12 text-xs text-slate-400">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold text-sm">P</div>
+                <div>
+                    <span class="text-white font-bold text-sm">Pulse Analytics BE</span>
+                    <p class="text-[11px] text-slate-400">Student-Onderneming Local Intelligence • Leuven & Liège</p>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap justify-center gap-6">
+                <a href="#demo" class="hover:text-white" data-i18n="nav_report">Maandrekening</a>
+                <a href="#calendar" class="hover:text-white" data-i18n="nav_events">Stadskalender</a>
+                <a href="#pricing" class="hover:text-white" data-i18n="nav_pricing">Tarieven</a>
+                <a href="#support" class="hover:text-white" data-i18n="nav_portal">Support</a>
+            </div>
+
+            <div class="text-slate-400 text-center md:text-right">
+                © 2026 Pulse Analytics. Alle rechten voorbehouden.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Email Modal Simulator -->
+    <div id="email-modal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="glass-card max-w-md w-full p-6 rounded-2xl border border-slate-700 shadow-2xl relative">
+            <button onclick="closeEmailModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+
+            <div class="w-12 h-12 rounded-xl bg-blue-600/20 text-blue-400 flex items-center justify-center text-xl mb-4">
+                <i class="fa-solid fa-envelope-circle-check"></i>
+            </div>
+
+            <h3 class="text-lg font-bold text-white" data-i18n="modal_email_title">Verstuur Maandrekening per E-mail</h3>
+            <p class="text-xs text-slate-300 mt-1" data-i18n="modal_email_sub">Ontvang de PDF en Excel-summary direct in je mailbox of stuur het rechtstreeks naar je boekhouder.</p>
+
+            <div class="mt-4 space-y-3">
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1" data-i18n="modal_email_label">E-mailadres Ontvanger</label>
+                    <input type="email" id="modal-email-input" value="klant@ladeuze-leuven.be" class="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1" data-i18n="modal_cc_label">Kopie naar Boekhouder (Optioneel)</label>
+                    <input type="email" placeholder="boekhouder@accountancy.be" class="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-blue-500">
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-end gap-2">
+                <button onclick="closeEmailModal()" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold hover:bg-slate-700" data-i18n="btn_cancel">Annuleren</button>
+                <button onclick="sendEmailSimulated()" class="px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-500" data-i18n="btn_send_now">Verstuur Nu</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+        <div class="px-4 py-3 rounded-xl bg-slate-900 border border-blue-500/50 text-white text-xs font-medium shadow-2xl flex items-center gap-3">
+            <i class="fa-solid fa-circle-check text-emerald-400 text-base" id="toast-icon"></i>
+            <span id="toast-message">Actie succesvol uitgevoerd!</span>
+        </div>
+    </div>
+
+    <script>
+        const translations = {
+            nl: {
+                nav_report: "Maandrekening",
+                nav_events: "Stadskalender",
+                nav_usp: "Boekhouder Besparing",
+                nav_pricing: "Tarieven",
+                nav_portal: "Klantenportaal",
+                btn_onsite: "Support op Locatie",
+                hero_badge: "Speciaal voor KMO's & Horeca in Leuven & Luik",
+                hero_title_1: "Financieel Overzicht &",
+                hero_title_2: "Stads-Intelligence voor KMO's",
+                hero_subtitle: "Geen moeilijke Excel-sheets of dure consultants. Wij leveren een overzichtelijke maandrekening én koppelen jouw zaak aan de stadsagenda van Leuven en Luik.",
+                btn_view_report: "Bekijk Voorbeeld Rapport",
+                btn_pricing: "Bekijk Betaalbare Tarieven",
+                trust_1: "Geen installatie nodig",
+                trust_2: "Kant-en-klaar voor je boekhouder",
+                trust_3: "Persoonlijke service op de zaak",
+                demo_heading: "De Pulse \"Maandrekening\" (Demo Dashboard)",
+                demo_subheading: "Zo ziet jouw maandelijks verslag eruit. Geen saaie Excel-tabellen, maar een helder, interactief dashboard.",
+                demo_period_label: "Selecteer een rapportageperiode om het verslag te herberekenen:",
+                status_active: "Actief Klant-ID #4820",
+                kpi_revenue: "Totale Omzet",
+                kpi_profit: "Netto Winst",
+                kpi_receivables: "Nog Te Ontvangen (Debiteuren)",
+                kpi_payables: "Nog Te Betalen (Crediteuren)",
+                kpi_margin_label: "Marge:",
+                kpi_action_needed: "⚠️ 2 facturen herinneren",
+                kpi_due_ok: "Vervaldatum in orde",
+                chart_title: "Omzet vs. Kosten Analyse",
+                event_impact_label: "Impact Alert",
+                event_advice_title: "💡 Actie-Advies van Pulse:",
+                event_source: "Bron: Visit Leuven / Liège API",
+                btn_full_calendar: "Volledige Kalender →",
+                report_accountant_ready: "Geformatteerd en klaar voor jouw boekhouder (PDF / CSV)",
+                btn_send_email: "Verstuur Naar Mijn E-mail",
+                btn_download_pdf: "Download Rapport (PDF)",
+                calendar_tag: "Demand Forecasting System",
+                calendar_heading: "Stads-Intelligence Kalender",
+                calendar_subheading: "Wij synchroniseren de stadsagenda's van Leuven (3000) en Luik (4000) automatisch via open data.",
+                usp_title: "Waarom KMO's kiezen voor Pulse Analytics",
+                usp_subtitle: "Drie simpele pijlers die jouw zaak direct geld en tijd besparen.",
+                usp_1_title: "Bespaar op Boekhoudkosten",
+                usp_1_desc: "Boekhouders rekenen €75 tot €120/uur om losse bonnetjes en Excel-lijstjes te ordenen. Wij leveren een geordend dossier aan.",
+                usp_2_title: "Grip op je Cashflow",
+                usp_2_desc: "Voorkom verrassingen bij de BTW-aangifte. Zie in één oogopslag welke klanten nog moeten betalen.",
+                usp_3_title: "Stads-Intelligence",
+                usp_3_desc: "Blijf op de hoogte van alle evenementen in Leuven en Luik. Stem inkoop en personeel tijdig af.",
+                pricing_badge: "Eerlijke & Betaalbare Tarieven",
+                pricing_title: "Kies het pakket dat bij jouw zaak past",
+                pricing_subtitle: "Geen dure advieskosten. Opzegbaar wanneer je wilt.",
+                plan_starter_title: "Starter (Jaar)",
+                plan_starter_desc: "Voor kleine zzp'ers & hobby-ondernemers",
+                plan_starter_f1: "1x Per jaar compleet visueel jaarverslag",
+                plan_starter_f2: "Inclusief Boekhouder-Export (CSV/PDF)",
+                plan_starter_f3: "Jaarlijkse evenementenkalender Leuven/Luik",
+                plan_kwartaal_title: "Kwartaal (BTW-Synchroon)",
+                plan_kwartaal_desc: "Ideaal voor winkels & kleine horeca",
+                plan_kwartaal_f1: "Elk kwartaal een bijgewerkt dashboard",
+                plan_kwartaal_f2: "Gesynchroniseerd met de BTW-aangifte",
+                plan_kwartaal_f3: "Maandelijkse stads-event alerts per mail",
+                plan_kwartaal_f4: "Ouderdomsanalyse van openstaande rekeningen",
+                plan_maand_title: "Maand Premium + Locatie Support",
+                plan_maand_desc: "Voor drukke horeca & zaken op top-locaties",
+                plan_maand_f1: "Elke maand haarscherp financieel rapport",
+                plan_maand_f2: "Persoonlijk bezoek op locatie (Leuven/Luik)",
+                plan_maand_f3: "Actieve cashflow- & debiteurenbewaking",
+                plan_maand_f4: "Directe WhatsApp / Telefoon ondersteuning",
+                btn_choose_plan: "Kies dit Pakket",
+                per_year: "/ eenmalig per jaar",
+                per_month: "/ per maand (per kwartaal gefactureerd)",
+                per_month_flat: "/ per maand",
+                portal_onsite_title: "Vraag een Bezoek op Locatie Aan",
+                portal_onsite_subtitle: "In Leuven, Luik of omliggende gemeenten",
+                form_name: "Naam van de Zaak / Eigenaar",
+                form_city: "Stad / Regio",
+                form_email: "E-mailadres",
+                form_request_type: "Type Ondersteuning",
+                form_message: "Bericht / Toelichting",
+                opt_audit: "Gratis Eerste Financiële Audit",
+                opt_onsite: "Afspraak op de zaak (Leuven/Luik)",
+                opt_excel: "Hulp met Excel-export / Boekhouder",
+                btn_submit_request: "Verstuur Aanvraag",
+                eval_title: "Evalueer Onze Dienstverlening",
+                eval_subtitle: "Voor bestaande en nieuwe klanten",
+                eval_rating_label: "Hoe tevreden ben je over jouw maandelijkse rapport?",
+                btn_send_feedback: "Verstuur Feedback",
+                direct_contact: "Direct contact via WhatsApp:",
+                modal_email_title: "Verstuur Maandrekening per E-mail",
+                modal_email_sub: "Ontvang de PDF en Excel-summary direct in je mailbox.",
+                modal_email_label: "E-mailadres Ontvanger",
+                modal_cc_label: "Kopie naar Boekhouder (Optioneel)",
+                btn_cancel: "Annuleren",
+                btn_send_now: "Verstuur Nu"
+            },
+            fr: {
+                nav_report: "Rapport Mensuel",
+                nav_events: "Agenda Urbain",
+                nav_usp: "Économie Comptable",
+                nav_pricing: "Tarifs",
+                nav_portal: "Espace Client",
+                btn_onsite: "Support sur Place",
+                hero_badge: "Spécialement pour PME & Horeca à Louvain & Liège",
+                hero_title_1: "Aperçu Financier &",
+                hero_title_2: "Intelligence Urbaine pour PME",
+                hero_subtitle: "Pas de fichiers Excel complexes ni de consultants coûteux. Nous fournissons un rapport mensuel clair et connectons votre commerce à l'agenda de Louvain et Liège.",
+                btn_view_report: "Voir Exemple de Rapport",
+                btn_pricing: "Consulter les Tarifs",
+                trust_1: "Aucune installation requise",
+                trust_2: "Prêt pour votre comptable",
+                trust_3: "Service personnalisé sur place",
+                demo_heading: "Le Rapport Mensuel Pulse (Démo Interactive)",
+                demo_subheading: "Voici à quoi ressemble votre rapport. Un tableau de bord interactif et clair.",
+                demo_period_label: "Sélectionnez une période pour recalculer le rapport :",
+                status_active: "Client Actif #4820",
+                kpi_revenue: "Chiffre d'Affaires Total",
+                kpi_profit: "Bénéfice Net",
+                kpi_receivables: "À Recevoir (Créances)",
+                kpi_payables: "À Payer (Dettes)",
+                kpi_margin_label: "Marge :",
+                kpi_action_needed: "⚠️ 2 factures à relancer",
+                kpi_due_ok: "Échéances en ordre",
+                chart_title: "Analyse Revenus vs Charges",
+                event_impact_label: "Alerte Impact",
+                event_advice_title: "💡 Conseil Stratégique Pulse :",
+                event_source: "Source: API Visit Leuven / Liège",
+                btn_full_calendar: "Calendrier Complet →",
+                report_accountant_ready: "Prêt et formaté pour votre comptable (PDF / CSV)",
+                btn_send_email: "Envoyer par E-mail",
+                btn_download_pdf: "Télécharger Rapport (PDF)",
+                calendar_tag: "Prévision de la Demande",
+                calendar_heading: "Calendrier d'Intelligence Urbaine",
+                calendar_subheading: "Nous synchronisons automatiquement les agendas de Louvain (3000) et Liège (4000) via open data.",
+                usp_title: "Pourquoi les PME choisissent Pulse Analytics",
+                usp_subtitle: "Trois piliers simples pour économiser du temps et de l'argent.",
+                usp_1_title: "Économisez sur les Frais Comptables",
+                usp_1_desc: "Les comptables facturent 75€ à 120€/heure pour trier des reçus. Nous fournissons un dossier déjà structuré.",
+                usp_2_title: "Maîtrise de la Trésorerie",
+                usp_2_desc: "Évitez les surprises lors des déclarations TVA. Voyez immédiatement quels clients doivent payer.",
+                usp_3_title: "Intelligence Urbaine",
+                usp_3_desc: "Restez informé de tous les événements à Louvain et Liège. Adaptez vos stocks et votre personnel.",
+                pricing_badge: "Tarifs Transparents & Accessibles",
+                pricing_title: "Choisissez la formule adaptée à votre commerce",
+                pricing_subtitle: "Sans frais cachés. Annulable à tout moment.",
+                plan_starter_title: "Starter (Annuel)",
+                plan_starter_desc: "Pour petits indépendants & complémentaires",
+                plan_starter_f1: "1x Rapport annuel complet et visuel",
+                plan_starter_f2: "Export prêt pour le comptable (CSV/PDF)",
+                plan_starter_f3: "Calendrier annuel des événements",
+                plan_kwartaal_title: "Trimestriel (TVA-Synchro)",
+                plan_kwartaal_desc: "Idéal pour boutiques & petite restauration",
+                plan_kwartaal_f1: "Tableau de bord mis à jour chaque trimestre",
+                plan_kwartaal_f2: "Synchronisé avec les déclarations TVA",
+                plan_kwartaal_f3: "Alertes événements urbains par e-mail",
+                plan_kwartaal_f4: "Analyse d'ancienneté des factures ouvertes",
+                plan_maand_title: "Mensuel Premium + Support sur Place",
+                plan_maand_desc: "Pour établissements Horeca très fréquentés",
+                plan_maand_f1: "Rapport financier précis chaque mois",
+                plan_maand_f2: "Visite personnelle sur place (Louvain/Liège)",
+                plan_maand_f3: "Suivi actif de la trésorerie et des créances",
+                plan_maand_f4: "Support direct par WhatsApp / Téléphone",
+                btn_choose_plan: "Choisir ce Plan",
+                per_year: "/ une fois par an",
+                per_month: "/ par mois (facturé par trimestre)",
+                per_month_flat: "/ par mois",
+                portal_onsite_title: "Demander une Visite sur Place",
+                portal_onsite_subtitle: "À Louvain, Liège et communes avoisinantes",
+                form_name: "Nom du Commerce / Propriétaire",
+                form_city: "Ville / Région",
+                form_email: "Adresse E-mail",
+                form_request_type: "Type d'Assistance",
+                form_message: "Message / Précisions",
+                opt_audit: "Premier Audit Financier Gratuit",
+                opt_onsite: "Rendez-vous sur place (Louvain/Liège)",
+                opt_excel: "Aide pour l'export Excel / Comptable",
+                btn_submit_request: "Envoyer la Demande",
+                eval_title: "Évaluez nos Services",
+                eval_subtitle: "Pour clients actuels et nouveaux",
+                eval_rating_label: "Êtes-vous satisfait de votre rapport mensuel ?",
+                btn_send_feedback: "Envoyer mon Avis",
+                direct_contact: "Contact direct via WhatsApp :",
+                modal_email_title: "Envoyer le Rapport par E-mail",
+                modal_email_sub: "Recevez le PDF et le résumé Excel directement dans votre boîte mail.",
+                modal_email_label: "E-mail du Destinataire",
+                modal_cc_label: "Copie au Comptable (Optionnel)",
+                btn_cancel: "Annuler",
+                btn_send_now: "Envoyer Maintenant"
+            },
+            de: {
+                nav_report: "Monatsbericht",
+                nav_events: "Stadtkalender",
+                nav_usp: "Buchhalter-Ersparnis",
+                nav_pricing: "Preise",
+                nav_portal: "Kundenportal",
+                btn_onsite: "Vor-Ort Support",
+                hero_badge: "Speziell für KMUs & Gastronomie in Löwen & Lüttich",
+                hero_title_1: "Finanzübersicht &",
+                hero_title_2: "Stadt-Intelligence für KMUs",
+                hero_subtitle: "Keine komplizierten Excel-Tabellen oder teuren Berater. Wir liefern einen klaren Monatsbericht und verbinden Ihr Geschäft mit den Stadtveranstaltungen.",
+                btn_view_report: "Beispielbericht ansehen",
+                btn_pricing: "Günstige Tarife anzeigen",
+                trust_1: "Keine Installation erforderlich",
+                trust_2: "Fertig für Ihren Buchhalter",
+                trust_3: "Persönlicher Service vor Ort",
+                demo_heading: "Der Pulse \"Monatsbericht\" (Demo)",
+                demo_subheading: "So sieht Ihr monatlicher Bericht aus. Ein interaktives und übersichtliches Dashboard.",
+                demo_period_label: "Wählen Sie einen Zeitraum zur Neuberechnung:",
+                status_active: "Aktiver Kunde #4820",
+                kpi_revenue: "Gesamtumsatz",
+                kpi_profit: "Nettogewinn",
+                kpi_receivables: "Offene Forderungen",
+                kpi_payables: "Offene Verbindlichkeiten",
+                kpi_margin_label: "Marge:",
+                kpi_action_needed: "⚠️ 2 Rechnungen anmahnen",
+                kpi_due_ok: "Fälligkeiten in Ordnung",
+                chart_title: "Umsatz vs. Kosten Analyse",
+                event_impact_label: "Auswirkungs-Alert",
+                event_advice_title: "💡 Pulse Handlungsempfehlung:",
+                event_source: "Quelle: Visit Leuven / Liège API",
+                btn_full_calendar: "Vollständiger Kalender →",
+                report_accountant_ready: "Formatiert und bereit für Ihren Buchhalter (PDF / CSV)",
+                btn_send_email: "Per E-Mail senden",
+                btn_download_pdf: "Bericht herunterladen (PDF)",
+                calendar_tag: "Bedarfsprognose-System",
+                calendar_heading: "Stadt-Intelligence Kalender",
+                calendar_subheading: "Wir synchronisieren automatisch die Stadtkalender von Löwen (3000) und Lüttich (4000).",
+                usp_title: "Warum KMUs Pulse Analytics wählen",
+                usp_subtitle: "Drei einfache Säulen, die Zeit und Geld sparen.",
+                usp_1_title: "Buchhaltungskosten sparen",
+                usp_1_desc: "Buchhalter berechnen 75€-120€/Std. für das Sortieren von Belegen. Wir liefern vorgeordnete Unterlagen.",
+                usp_2_title: "Cashflow im Griff",
+                usp_2_desc: "Vermeiden Sie Überraschungen bei der MwSt. Sehen Sie sofort, wer noch zahlen muss.",
+                usp_3_title: "Stadt-Intelligence",
+                usp_3_desc: "Bleiben Sie über alle Events in Löwen und Lüttich informiert. Passen Sie Einkauf und Personal an.",
+                pricing_badge: "Faire & Transparente Preise",
+                pricing_title: "Wählen Sie das passende Paket",
+                pricing_subtitle: "Jederzeit kündbar ohne versteckte Kosten.",
+                plan_starter_title: "Starter (Jährlich)",
+                plan_starter_desc: "Für kleine Selbstständige",
+                plan_starter_f1: "1x Jährlicher kompletter Bericht",
+                plan_starter_f2: "Buchhalter-Export (CSV/PDF)",
+                plan_starter_f3: "Jährlicher Eventkalender",
+                plan_kwartaal_title: "Quartal (MwSt-Synchro)",
+                plan_kwartaal_desc: "Ideal für Geschäfte & Gastronomie",
+                plan_kwartaal_f1: "Quartalsweise aktualisiertes Dashboard",
+                plan_kwartaal_f2: "Synchronisiert mit der MwSt-Erklärung",
+                plan_kwartaal_f3: "Monatliche Stadt-Event Alerts",
+                plan_kwartaal_f4: "Altersstrukturanalyse offener Rechnungen",
+                plan_maand_title: "Monat Premium + Vor-Ort",
+                plan_maand_desc: "Für gut besuchte Gastronomiebetriebe",
+                plan_maand_f1: "Monatlicher präziser Finanzbericht",
+                plan_maand_f2: "Persönlicher Besuch vor Ort (Löwen/Lüttich)",
+                plan_maand_f3: "Aktive Cashflow-Überwachung",
+                plan_maand_f4: "Direkter WhatsApp & Telefon Support",
+                btn_choose_plan: "Paket wählen",
+                per_year: "/ einmalig pro Jahr",
+                per_month: "/ pro Monat (quartalsweise abgerechnet)",
+                per_month_flat: "/ pro Monat",
+                portal_onsite_title: "Vor-Ort Termin anfragen",
+                portal_onsite_subtitle: "In Löwen, Lüttich und Umgebung",
+                form_name: "Name des Geschäfts / Inhabers",
+                form_city: "Stadt / Region",
+                form_email: "E-Mail-Adresse",
+                form_request_type: "Art der Unterstützung",
+                form_message: "Nachricht / Details",
+                opt_audit: "Kostenloses erstes Finanz-Audit",
+                opt_onsite: "Termin vor Ort (Löwen/Lüttich)",
+                opt_excel: "Hilfe bei Excel-Export / Buchhalter",
+                btn_submit_request: "Anfrage Absenden",
+                eval_title: "Bewerten Sie unseren Service",
+                eval_subtitle: "Für bestehende und neue Kunden",
+                eval_rating_label: "Wie zufrieden sind Sie mit Ihrem Monatsbericht?",
+                btn_send_feedback: "Feedback Senden",
+                direct_contact: "Direktkontakt per WhatsApp:",
+                modal_email_title: "Monatsbericht per E-Mail senden",
+                modal_email_sub: "Erhalten Sie das PDF und die Zusammenfassung direkt in Ihrem Postfach.",
+                modal_email_label: "Empfänger E-Mail-Adresse",
+                modal_cc_label: "Kopie an Buchhalter (Optional)",
+                btn_cancel: "Abbrechen",
+                btn_send_now: "Jetzt Senden"
+            },
+            en: {
+                nav_report: "Monthly Report",
+                nav_events: "City Calendar",
+                nav_usp: "Accountant Savings",
+                nav_pricing: "Pricing",
+                nav_portal: "Client Portal",
+                btn_onsite: "On-Site Support",
+                hero_badge: "Tailored for SMBs & Hospitality in Leuven & Liège",
+                hero_title_1: "Financial Clarity &",
+                hero_title_2: "City Intelligence for SMBs",
+                hero_subtitle: "No complex Excel sheets or expensive consultants. We deliver a clear monthly report and connect your business to Leuven and Liège city events.",
+                btn_view_report: "View Sample Report",
+                btn_pricing: "View Affordable Plans",
+                trust_1: "No software installation needed",
+                trust_2: "Accountant-ready exports",
+                trust_3: "Personal on-site support",
+                demo_heading: "The Pulse \"Monthly Report\" (Interactive Demo)",
+                demo_subheading: "This is what your monthly report looks like. A sleek, interactive dashboard instead of tedious spreadsheets.",
+                demo_period_label: "Select a reporting period to recalculate:",
+                status_active: "Active Client ID #4820",
+                kpi_revenue: "Total Revenue",
+                kpi_profit: "Net Profit",
+                kpi_receivables: "Outstanding Receivables",
+                kpi_payables: "Outstanding Payables",
+                kpi_margin_label: "Margin:",
+                kpi_action_needed: "⚠️ 2 invoices need reminder",
+                kpi_due_ok: "Payment terms OK",
+                chart_title: "Revenue vs. Expenses Analysis",
+                event_impact_label: "Impact Alert",
+                event_advice_title: "💡 Pulse Actionable Tip:",
+                event_source: "Source: Visit Leuven / Liège API",
+                btn_full_calendar: "Full Calendar →",
+                report_accountant_ready: "Formatted and ready for your accountant (PDF / CSV)",
+                btn_send_email: "Send To My E-mail",
+                btn_download_pdf: "Download Report (PDF)",
+                calendar_tag: "Demand Forecasting System",
+                calendar_heading: "City Intelligence Calendar",
+                calendar_subheading: "We automatically sync Leuven (3000) and Liège (4000) city event data via open data feeds.",
+                usp_title: "Why Belgian SMBs choose Pulse Analytics",
+                usp_subtitle: "Three simple pillars that save your business time and money.",
+                usp_1_title: "Save on Accountant Fees",
+                usp_1_desc: "Accountants charge €75-€120/hour to sort shoeboxes of receipts. We deliver pre-structured digital files.",
+                usp_2_title: "Cashflow Control",
+                usp_2_desc: "Never be surprised by VAT deadlines. Know exactly who owes you money at a single glance.",
+                usp_3_title: "City Intelligence",
+                usp_3_desc: "Stay ahead of events, festivals, and matches in Leuven and Liège. Align inventory and staffing.",
+                pricing_badge: "Fair & Transparent Pricing",
+                pricing_title: "Choose the plan that fits your business",
+                pricing_subtitle: "Cancel anytime with no hidden consultant fees.",
+                plan_starter_title: "Starter (Annual)",
+                plan_starter_desc: "For small freelancers & side businesses",
+                plan_starter_f1: "1x Complete annual visual report",
+                plan_starter_f2: "Accountant export included (CSV/PDF)",
+                plan_starter_f3: "Annual city events calendar",
+                plan_kwartaal_title: "Quarterly (VAT-Synced)",
+                plan_kwartaal_desc: "Ideal for retail shops & cafes",
+                plan_kwartaal_f1: "Quarterly updated financial dashboard",
+                plan_kwartaal_f2: "Synced with official VAT filings",
+                plan_kwartaal_f3: "Monthly city event alerts via email",
+                plan_kwartaal_f4: "Invoice aging analysis",
+                plan_maand_title: "Monthly Premium + On-Site",
+                plan_maand_desc: "For busy restaurants & prime locations",
+                plan_maand_f1: "Monthly high-precision financial report",
+                plan_maand_f2: "Personal on-site visit (Leuven/Liège)",
+                plan_maand_f3: "Active cashflow & debt monitoring",
+                plan_maand_f4: "Direct WhatsApp & Phone support",
+                btn_choose_plan: "Select Plan",
+                per_year: "/ once per year",
+                per_month: "/ per month (billed quarterly)",
+                per_month_flat: "/ per month",
+                portal_onsite_title: "Request an On-Site Visit",
+                portal_onsite_subtitle: "In Leuven, Liège, and surrounding areas",
+                form_name: "Business / Owner Name",
+                form_city: "City / Region",
+                form_email: "Email Address",
+                form_request_type: "Support Type",
+                form_message: "Message / Details",
+                opt_audit: "Free Initial Financial Audit",
+                opt_onsite: "On-site meeting (Leuven/Liège)",
+                opt_excel: "Help with Excel export / Accountant",
+                btn_submit_request: "Submit Request",
+                eval_title: "Evaluate Our Service",
+                eval_subtitle: "For current and new clients",
+                eval_rating_label: "How satisfied are you with your monthly report?",
+                btn_send_feedback: "Submit Feedback",
+                direct_contact: "Direct contact via WhatsApp:",
+                modal_email_title: "Send Monthly Report via Email",
+                modal_email_sub: "Receive the PDF and Excel summary directly in your inbox.",
+                modal_email_label: "Recipient Email Address",
+                modal_cc_label: "CC Accountant (Optional)",
+                btn_cancel: "Cancel",
+                btn_send_now: "Send Now"
+            }
+        };
+
+        const monthData = {
+            april: {
+                omzet: "€ 4.750,00",
+                omzetTrend: "+14% t.o.v. vorige maand",
+                winst: "€ 3.650,00",
+                marge: "76,8%",
+                debiteuren: "€ 3.550,00",
+                crediteuren: "€ 450,00",
+                chartLabel: "Periode: April 2026",
+                revenueArr: [1200, 1800, 950, 800], // 4 weeks
+                costArr: [400, 350, 200, 150],
+                eventTitle: "🔴 OHL Thuiswedstrijd & Examen-Kickoff",
+                eventDesc: "Hoge verwachte drukte rond Ladeuzeplein & Oude Markt. Historische omzetstijging van +35% op avondverkopen.",
+                eventAdvice: "Verhoog bier & snack inkoop met 25%. Plan 2 extra kelners in voor de avondshift."
+            },
+            mei: {
+                omzet: "€ 4.800,00",
+                omzetTrend: "+1,2% t.o.v. april",
+                winst: "€ 4.350,00",
+                marge: "90,6%",
+                debiteuren: "€ 1.600,00",
+                crediteuren: "€ 0,00",
+                chartLabel: "Periode: Mei 2026",
+                revenueArr: [1500, 1100, 1200, 1000],
+                costArr: [150, 100, 120, 80],
+                eventTitle: "🔴 Studentencantus & Hapje Tapje Promo",
+                eventDesc: "Massale aanwezigheid van studenten op Ladeuzeplein. Grote kans op uitverkochte drankvoorraad.",
+                eventAdvice: "Promoot de 'Speciale Gin' slow-mover tijdens de cantus om dure voorraad op te ruimen."
+            },
+            juni: {
+                omzet: "€ 5.200,00",
+                omzetTrend: "+8,3% t.o.v. mei",
+                winst: "€ 4.100,00",
+                marge: "78,8%",
+                debiteuren: "€ 900,00",
+                crediteuren: "€ 300,00",
+                chartLabel: "Periode: Juni 2026",
+                revenueArr: [1300, 1400, 1250, 1250],
+                costArr: [300, 250, 280, 270],
+                eventTitle: "🟡 Zomerevenementen & Terrasopening",
+                eventDesc: "Start van het zomerseizoen met zonnig weer en stijgende terrassomzet.",
+                eventAdvice: "Zorg voor voldoende personeel op zonnige namiddagen (14:00 - 18:00)."
+            }
+        };
+
+        const cityEventsData = {
+            leuven: [
+                {
+                    date: "18 Mei 2026",
+                    title: "Studentencantus Ladeuzeplein",
+                    impact: "HIGH",
+                    desc: "Verwacht 4.000+ studenten op het plein voor je zaak.",
+                    tip: "💡 Actie: Extra fusten Stella inslaan & snelmenu's aanbieden."
+                },
+                {
+                    date: "01 Juni 2026",
+                    title: "Hapje Tapje Kick-off",
+                    impact: "HIGH",
+                    desc: "Grootste culinaire evenement van Leuven in de binnenstad.",
+                    tip: "💡 Actie: Zet 2 extra terras-medewerkers in vanaf 12:00."
+                },
+                {
+                    date: "12 Juni 2026",
+                    title: "OHL Promotiewedstrijd",
+                    impact: "MEDIUM",
+                    desc: "Piek in cafe-bezoek voor en na de match.",
+                    tip: "💡 Actie: Schermen klaarzetten voor live-uitzending."
+                }
+            ],
+            liege: [
+                {
+                    date: "25 Mei 2026",
+                    title: "Les Ardentes Warm-up (Place St-Lambert)",
+                    impact: "HIGH",
+                    desc: "Grote stroom jongeren en toeristen in Le Carré en centrum Luik.",
+                    tip: "💡 Actie: Verhoog voorraad dranken & snacks met 40%."
+                },
+                {
+                    date: "05 Juni 2026",
+                    title: "Nocturne des Coteaux de la Citadelle",
+                    impact: "HIGH",
+                    desc: "Duizenden bezoekers in de historische binnenstad van Luik.",
+                    tip: "💡 Actie: Blijf 2 uur langer open met borrelplanken."
+                },
+                {
+                    date: "20 Juni 2026",
+                    title: "Standard de Liège Fan-Day",
+                    impact: "MEDIUM",
+                    desc: "Piek in horecabestedingen rondom het stadion en centrum.",
+                    tip: "💡 Actie: Zorg voor snelle tapinstallatie."
+                }
+            ]
+        };
+
+        let currentLang = 'nl';
+        let currentCity = 'leuven';
+        let currentMonth = 'april';
+        let chartInstance = null;
+        let selectedRating = 0;
+
+        window.onload = function() {
+            initChart();
+            renderCityEvents('leuven');
+        };
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            
+            // Update active pill styling
+            ['nl', 'fr', 'de', 'en'].forEach(l => {
+                const btn = document.getElementById(`lang-${l}`);
+                if (l === lang) {
+                    btn.className = "px-2 py-1 rounded-md font-semibold transition-all bg-blue-600 text-white shadow";
+                } else {
+                    btn.className = "px-2 py-1 rounded-md font-semibold transition-all text-slate-400 hover:text-white";
+                }
+            });
+
+            // Translate all data-i18n elements
+            const elements = document.querySelectorAll('[data-i18n]');
+            elements.forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang] && translations[lang][key]) {
+                    el.innerText = translations[lang][key];
+                }
+            });
+
+            showToast(`Taal gewijzigd naar ${lang.toUpperCase()}`);
+        }
+
+        function initChart() {
+            const ctx = document.getElementById('financialChart').getContext('2d');
+            chartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                    datasets: [
+                        {
+                            label: 'Omzet (€)',
+                            data: monthData.april.revenueArr,
+                            backgroundColor: '#2563EB',
+                            borderRadius: 6
+                        },
+                        {
+                            label: 'Kosten (€)',
+                            data: monthData.april.costArr,
+                            backgroundColor: '#374151',
+                            borderRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: '#9CA3AF', font: { size: 11 } }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#9CA3AF' },
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' }
+                        },
+                        y: {
+                            ticks: { color: '#9CA3AF' },
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function changeMonth(monthKey) {
+            currentMonth = monthKey;
+            const data = monthData[monthKey];
+
+            // Update month buttons styling
+            ['april', 'mei', 'juni'].forEach(m => {
+                const btn = document.getElementById(`btn-${m}`);
+                if (m === monthKey) {
+                    btn.className = "month-btn px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-blue-600 text-white shadow";
+                } else {
+                    btn.className = "month-btn px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white transition-all";
+                }
+            });
+
+            // Update KPI text values
+            document.getElementById('kpi-omzet').innerText = data.omzet;
+            document.getElementById('kpi-omzet-trend').innerText = data.omzetTrend;
+            document.getElementById('kpi-winst').innerText = data.winst;
+            document.getElementById('kpi-marge').innerText = data.marge;
+            document.getElementById('kpi-debiteuren').innerText = data.debiteuren;
+            document.getElementById('kpi-crediteuren').innerText = data.crediteuren;
+
+            // Update Event Intelligence Box
+            document.getElementById('chart-month-label').innerText = data.chartLabel;
+            document.getElementById('event-title').innerText = data.eventTitle;
+            document.getElementById('event-desc').innerText = data.eventDesc;
+            document.getElementById('event-advice').innerText = data.eventAdvice;
+
+            // Update Chart.js datasets
+            if (chartInstance) {
+                chartInstance.data.datasets[0].data = data.revenueArr;
+                chartInstance.data.datasets[1].data = data.costArr;
+                chartInstance.update();
+            }
+
+            showToast(`Maandrakening bijgewerkt voor ${monthKey.toUpperCase()} 2026`);
+        }
+
+        function switchCity(city) {
+            currentCity = city;
+            const btnLeuven = document.getElementById('city-btn-leuven');
+            const btnLiege = document.getElementById('city-btn-liege');
+
+            if (city === 'leuven') {
+                btnLeuven.className = "px-4 py-2 rounded-lg text-xs font-bold transition-all bg-blue-600 text-white shadow";
+                btnLiege.className = "px-4 py-2 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-white";
+                document.getElementById('event-city-badge').innerText = "Leuven (3000)";
+            } else {
+                btnLiege.className = "px-4 py-2 rounded-lg text-xs font-bold transition-all bg-blue-600 text-white shadow";
+                btnLeuven.className = "px-4 py-2 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-white";
+                document.getElementById('event-city-badge').innerText = "Luik (4000)";
+            }
+
+            renderCityEvents(city);
+            showToast(`Stadskalender geschakeld naar ${city.toUpperCase()}`);
+        }
+
+        function renderCityEvents(city) {
+            const container = document.getElementById('event-cards-container');
+            const events = cityEventsData[city];
+
+            container.innerHTML = events.map(evt => `
+                <div class="glass-card p-5 rounded-xl border border-slate-800 flex flex-col justify-between hover:border-blue-500/40 transition-all">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-xs font-semibold text-slate-400"><i class="fa-regular fa-calendar mr-1"></i> ${evt.date}</span>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${evt.impact === 'HIGH' ? 'bg-red-950 text-red-400 border border-red-800' : 'bg-amber-950 text-amber-400 border border-amber-800'}">
+                                ${evt.impact} IMPACT
+                            </span>
+                        </div>
+                        <h4 class="text-sm font-bold text-white mb-2">${evt.title}</h4>
+                        <p class="text-xs text-slate-300 leading-relaxed mb-4">${evt.desc}</p>
+                    </div>
+                    <div class="p-3 rounded-lg bg-slate-950 border border-slate-800 text-xs text-blue-300 font-medium">
+                        ${evt.tip}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function setRating(stars) {
+            selectedRating = stars;
+            const starContainer = document.getElementById('star-rating');
+            const starsList = starContainer.children;
+
+            for (let i = 0; i < 5; i++) {
+                if (i < stars) {
+                    starsList[i].className = "fa-solid fa-star text-amber-400 cursor-pointer";
+                } else {
+                    starsList[i].className = "fa-solid fa-star text-slate-700 cursor-pointer";
+                }
+            }
+
+            document.getElementById('rating-text').innerText = `Score: ${stars}/5 Sterren`;
+        }
+
+        function submitFeedback() {
+            if (selectedRating === 0) {
+                showToast("Selecteer eerst een aantal sterren!");
+                return;
+            }
+            showToast("Bedankt! Je feedback is verzonden naar Pulse Analytics.");
+            document.getElementById('feedback-text').value = '';
+        }
+
+        function handleSupportSubmit(e) {
+            e.preventDefault();
+            showToast("Aanvraag ontvangen! We nemen binnen 24 uur contact op.");
+            e.target.reset();
+        }
+
+        function selectPlan(planName) {
+            showToast(`Pakket '${planName}' geselecteerd! We openen de inschrijving...`);
+            document.getElementById('support').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function openEmailModal() {
+            document.getElementById('email-modal').classList.remove('hidden');
+        }
+
+        function closeEmailModal() {
+            document.getElementById('email-modal').classList.add('hidden');
+        }
+
+        function sendEmailSimulated() {
+            closeEmailModal();
+            showToast("Maandrekening verzonden per e-mail!");
+        }
+
+        function triggerPdfDownload() {
+            showToast("Genereren van PDF Maandrekening gestart...");
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-message');
+            toastMsg.innerText = message;
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
